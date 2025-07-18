@@ -1,0 +1,27 @@
+leaf_address: localhost:50050
+max_duration: 30s
+phases:
+  - name: variable1
+    type: variable
+    start_time: 1s
+    start_rps: 50
+    end_rps: 10
+    step: -10
+    duration: 10s
+    image_tag: hyperfaas-echo:latest
+  - name: variable2
+    type: variable
+    start_time: 10s
+    start_rps: 50
+    end_rps: 10
+    step: -5
+    duration: 10s
+    image_tag: hyperfaas-echo:latest
+  - name: variable3
+    type: variable
+    start_time: 20s
+    start_rps: 70
+    end_rps: 10
+    step: -5
+    duration: 10s
+    image_tag: hyperfaas-echo:latest

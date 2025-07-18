@@ -1,0 +1,23 @@
+leaf_address: localhost:50050
+max_duration: 30s
+timeout: 10
+workload:
+  phases:
+    - name: phase1
+      type: constant
+      start_time: 1s
+      start_rps: 10
+      duration: 10s
+      image_tag: hyperfaas-echo:latest
+    - name: phase2
+      type: constant
+      start_time: 10s
+      start_rps: 20
+      duration: 10s
+      image_tag: hyperfaas-echo:latest
+    - name: phase3
+      type: constant
+      start_time: 20s
+      start_rps: 30
+      duration: 10s
+      image_tag: hyperfaas-echo:latest

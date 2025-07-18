@@ -1,0 +1,21 @@
+leaf_address: localhost:50050
+max_duration: 30s
+phases:
+  - name: phase1
+    type: constant
+    start_time: 1s
+    start_rps: 10
+    duration: 10s
+    image_tag: hyperfaas-echo:latest
+  - name: overlapping1
+    type: constant
+    start_time: 5s
+    start_rps: 20
+    duration: 10s
+    image_tag: hyperfaas-echo:latest
+  - name: overlapping2
+    type: constant
+    start_time: 7s
+    start_rps: 30
+    duration: 10s
+    image_tag: hyperfaas-echo:latest

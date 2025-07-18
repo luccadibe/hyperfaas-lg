@@ -1,0 +1,11 @@
+test-reducing:
+    go run cmd/main.go --config=test/configs/reducing_config.yaml
+
+test-overlapping:
+    go run cmd/main.go --config=test/configs/overlapping.yaml
+
+test-generate-big:
+    go run cmd/main.go --config=test/configs/generate-big-config.yaml
+
+test-generate-small:
+    go run cmd/main.go --config=test/configs/generate-small-config.yaml

@@ -1,0 +1,23 @@
+leaf_address: localhost:50050
+max_duration: 30s
+timeout: 10
+generate_workload: true
+seed: 1
+patterns:
+  echo-1:
+    image_tag: hyperfaas-echo:latest
+    phase_count:
+      min: 1
+      max: 3
+    constant_likelihood: 0.5
+    ramping_likelihood: 0.5
+    parameters:
+      start_rps:
+        min: 10
+        max: 25
+      end_rps:
+        min: 75
+        max: 75
+      step:
+        min: 2
+        max: 30
