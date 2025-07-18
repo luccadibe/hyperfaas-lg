@@ -9,3 +9,6 @@ test-generate-big:
 
 test-generate-small:
     go run cmd/main.go --config=test/configs/generate-small-config.yaml
+
+howmanyerrors:
+    awk -F',' '{if($5!="") count++} END{print count}' results.csv

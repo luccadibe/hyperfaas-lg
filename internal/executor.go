@@ -15,39 +15,43 @@ type LoadExecutor interface {
 }
 
 type ConstantExecutor struct {
-	rps       int
-	client    *LeafClient
-	collector *Collector
-	funcMgr   *FunctionManager
-	l         *slog.Logger
+	rps          int
+	client       *LeafClient
+	collector    *Collector
+	funcMgr      *FunctionManager
+	l            *slog.Logger
+	dataProvider DataProvider
 }
 
-func NewConstantExecutor(client *LeafClient, collector *Collector, funcMgr *FunctionManager, l *slog.Logger) *ConstantExecutor {
+func NewConstantExecutor(client *LeafClient, collector *Collector, funcMgr *FunctionManager, l *slog.Logger, dataProvider DataProvider) *ConstantExecutor {
 	return &ConstantExecutor{
-		client:    client,
-		collector: collector,
-		funcMgr:   funcMgr,
-		l:         l,
+		client:       client,
+		collector:    collector,
+		funcMgr:      funcMgr,
+		l:            l,
+		dataProvider: dataProvider,
 	}
 }
 
 type RampingExecutor struct {
-	startRPS  int
-	endRPS    int
-	step      int
-	duration  time.Duration
-	client    *LeafClient
-	collector *Collector
-	funcMgr   *FunctionManager
-	l         *slog.Logger
+	startRPS     int
+	endRPS       int
+	step         int
+	duration     time.Duration
+	client       *LeafClient
+	collector    *Collector
+	funcMgr      *FunctionManager
+	l            *slog.Logger
+	dataProvider DataProvider
 }
 
-func NewRampingExecutor(client *LeafClient, collector *Collector, funcMgr *FunctionManager, l *slog.Logger) *RampingExecutor {
+func NewRampingExecutor(client *LeafClient, collector *Collector, funcMgr *FunctionManager, l *slog.Logger, dataProvider DataProvider) *RampingExecutor {
 	return &RampingExecutor{
-		client:    client,
-		collector: collector,
-		funcMgr:   funcMgr,
-		l:         l,
+		client:       client,
+		collector:    collector,
+		funcMgr:      funcMgr,
+		l:            l,
+		dataProvider: dataProvider,
 	}
 }
 
@@ -72,7 +76,7 @@ func (e *ConstantExecutor) Execute(ctx context.Context, phase TestPhase) {
 						FunctionID: &common.FunctionID{
 							Id: phase.FunctionID,
 						},
-						Data: []byte("test"),
+						Data: e.dataProvider.GetData(),
 					})
 					e.collector.Collect(result)
 				}()
@@ -120,7 +124,7 @@ func (e *RampingExecutor) Execute(ctx context.Context, phase TestPhase) {
 						FunctionID: &common.FunctionID{
 							Id: phase.FunctionID,
 						},
-						Data: []byte("test"),
+						Data: e.dataProvider.GetData(),
 					})
 					e.collector.Collect(result)
 				}()

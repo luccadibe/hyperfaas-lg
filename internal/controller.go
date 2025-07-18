@@ -14,10 +14,11 @@ import (
 )
 
 type Controller struct {
-	Config    *Config
-	collector *Collector
-	funcMgr   *FunctionManager
-	l         *slog.Logger
+	Config            *Config
+	collector         *Collector
+	funcMgr           *FunctionManager
+	funcDataProviders map[string]DataProvider
+	l                 *slog.Logger
 }
 
 type Config struct {
@@ -74,10 +75,10 @@ func (c *Controller) Run() {
 
 			switch phase.Type {
 			case "constant":
-				executor := NewConstantExecutor(client, c.collector, c.funcMgr, c.l)
+				executor := NewConstantExecutor(client, c.collector, c.funcMgr, c.l, c.GetDataProvider(phase.ImageTag))
 				executor.Execute(ctx, phase)
 			case "variable":
-				executor := NewRampingExecutor(client, c.collector, c.funcMgr, c.l)
+				executor := NewRampingExecutor(client, c.collector, c.funcMgr, c.l, c.GetDataProvider(phase.ImageTag))
 				executor.Execute(ctx, phase)
 			}
 
@@ -116,6 +117,10 @@ func (c *Controller) CreateFunctions() {
 	}
 }
 
+func (c *Controller) GetDataProvider(imageTag string) DataProvider {
+	return c.funcDataProviders[imageTag]
+}
+
 type Option func(*Controller)
 
 func NewController(logger *slog.Logger, opts ...Option) *Controller {
@@ -132,6 +137,20 @@ func NewController(logger *slog.Logger, opts ...Option) *Controller {
 	}
 	c.funcMgr = NewFunctionManager(c.Config.LeafAddress)
 	c.collector = NewCollector()
+	c.funcDataProviders = make(map[string]DataProvider)
+
+	distinctImageTags := getDistinctImageTags(c.Config.Workload.Phases)
+
+	for _, imageTag := range distinctImageTags {
+		switch imageTag {
+		case "hyperfaas-echo:latest":
+			c.funcDataProviders[imageTag] = NewEchoDataProvider(1024*1024, 1024*1024*10)
+		case "hyperfaas-bfs-json:latest":
+			c.funcDataProviders[imageTag] = NewBFSJSONDataProvider(100, 250)
+		case "hyperfaas-thumbnailer-json:latest":
+			c.funcDataProviders[imageTag] = NewThumbnailerJSONDataProvider()
+		}
+	}
 
 	return c
 }
@@ -178,4 +197,16 @@ func WithConfigFile(path string) Option {
 			}
 		}
 	}
+}
+
+func getDistinctImageTags(phases []TestPhase) []string {
+	imageTags := make(map[string]bool)
+	for _, phase := range phases {
+		imageTags[phase.ImageTag] = true
+	}
+	keys := make([]string, 0, len(imageTags))
+	for k := range imageTags {
+		keys = append(keys, k)
+	}
+	return keys
 }
