@@ -1,0 +1,57 @@
+leaf_address: localhost:50050
+max_duration: 1h
+timeout: 60
+generate_workload: true
+seed: 123
+patterns:
+  echo:
+    image_tag: hyperfaas-echo:latest
+    phase_count:
+      min: 25
+      max: 35
+    constant_likelihood: 0.5
+    ramping_likelihood: 0.5
+    parameters:
+      start_rps:
+        min: 10
+        max: 750
+      end_rps:
+        min: 750
+        max: 10000
+      step:
+        min: 10
+        max: 350
+  bfs:
+    image_tag: hyperfaas-bfs-json:latest
+    phase_count:
+      min: 25
+      max: 35
+    constant_likelihood: 0.5
+    ramping_likelihood: 0.5
+    parameters:
+      start_rps:
+        min: 10
+        max: 350
+      end_rps:
+        min: 350
+        max: 3500
+      step:
+        min: 10
+        max: 250
+  thumbnailer:
+    image_tag: hyperfaas-thumbnailer-json:latest
+    phase_count:
+      min: 25
+      max: 35
+    constant_likelihood: 0.5
+    ramping_likelihood: 0.5
+    parameters:
+      start_rps:
+        min: 10
+        max: 350
+      end_rps:
+        min: 350
+        max: 3500
+      step:
+        min: 10
+        max: 250
