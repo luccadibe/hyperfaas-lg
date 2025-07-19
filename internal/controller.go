@@ -144,7 +144,7 @@ func NewController(logger *slog.Logger, opts ...Option) *Controller {
 	for _, imageTag := range distinctImageTags {
 		switch imageTag {
 		case "hyperfaas-echo:latest":
-			c.funcDataProviders[imageTag] = NewEchoDataProvider(1024*1024, 1024*1024*10)
+			c.funcDataProviders[imageTag] = NewEchoDataProvider(256, 1024)
 		case "hyperfaas-bfs-json:latest":
 			c.funcDataProviders[imageTag] = NewBFSJSONDataProvider(100, 250)
 		case "hyperfaas-thumbnailer-json:latest":

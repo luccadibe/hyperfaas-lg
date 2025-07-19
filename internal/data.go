@@ -13,16 +13,33 @@ type DataProvider interface {
 }
 
 type EchoDataProvider struct {
-	minSize int
-	maxSize int
-	rand    *rand.Rand
+	minSize    int
+	maxSize    int
+	randomData []byte
+	poolSize   int
 }
 
 func NewEchoDataProvider(minSize int, maxSize int) *EchoDataProvider {
+	// Pre-generate a pool of random data
+	poolSize := 1024
+	randomData := make([]byte, poolSize)
+	for i := 0; i < poolSize; i += 8 {
+		u := rand.Uint64()
+		randomData[i+0] = byte(u)
+		randomData[i+1] = byte(u >> 8)
+		randomData[i+2] = byte(u >> 16)
+		randomData[i+3] = byte(u >> 24)
+		randomData[i+4] = byte(u >> 32)
+		randomData[i+5] = byte(u >> 40)
+		randomData[i+6] = byte(u >> 48)
+		randomData[i+7] = byte(u >> 56)
+	}
+
 	return &EchoDataProvider{
-		minSize: minSize,
-		maxSize: maxSize,
-		rand:    rand.New(rand.NewSource(123)),
+		minSize:    minSize,
+		maxSize:    maxSize,
+		randomData: randomData,
+		poolSize:   poolSize,
 	}
 }
 
@@ -35,23 +52,21 @@ func (e *EchoDataProvider) GetData() []byte {
 	if maxSize < minSize {
 		maxSize = minSize
 	}
-	size := e.rand.Intn((maxSize-minSize)+1) + minSize
+	size := rand.Intn((maxSize-minSize)+1) + minSize
 	size = size &^ 7 // round down to nearest multiple of 8
 	if size < 8 {
 		size = 8
 	}
-	data := make([]byte, size)
-	for i := 0; i < size; i += 8 {
-		u := e.rand.Uint64()
-		data[i+0] = byte(u)
-		data[i+1] = byte(u >> 8)
-		data[i+2] = byte(u >> 16)
-		data[i+3] = byte(u >> 24)
-		data[i+4] = byte(u >> 32)
-		data[i+5] = byte(u >> 40)
-		data[i+6] = byte(u >> 48)
-		data[i+7] = byte(u >> 56)
+
+	// Get random offset into our pre-generated data
+	maxOffset := len(e.randomData) - size
+	if maxOffset <= 0 {
+		maxOffset = 1
 	}
+	offset := rand.Intn(maxOffset)
+
+	data := make([]byte, size)
+	copy(data, e.randomData[offset:offset+size])
 	return data
 }
 
@@ -65,19 +80,17 @@ this is what bfs json expects
 type BFSJSONDataProvider struct {
 	minSize int
 	maxSize int
-	rand    *rand.Rand
 }
 
 func NewBFSJSONDataProvider(minSize int, maxSize int) *BFSJSONDataProvider {
 	return &BFSJSONDataProvider{
 		minSize: minSize,
 		maxSize: maxSize,
-		rand:    rand.New(rand.NewSource(123)),
 	}
 }
 
 func (b *BFSJSONDataProvider) GetData() []byte {
-	size := b.rand.Intn((b.maxSize-b.minSize)+1) + b.minSize
+	size := rand.Intn((b.maxSize-b.minSize)+1) + b.minSize
 	buf := make([]byte, 0, 16) // 16 is enough for {"Size":<int>}
 	buf = append(buf, '{', '"', 'S', 'i', 'z', 'e', '"', ':')
 	buf = strconv.AppendInt(buf, int64(size), 10)
@@ -104,25 +117,22 @@ this is what thumbnailer json expects
 	}
 */
 type ThumbnailerJSONDataProvider struct {
-	rand  *rand.Rand
 	image []byte
 }
 
 func NewThumbnailerJSONDataProvider() *ThumbnailerJSONDataProvider {
 	img, err := fetchThumbnailerImage()
 	if err != nil {
-		// If image fetch fails, panic or handle as needed. Here, panic for simplicity.
 		panic(err)
 	}
 	return &ThumbnailerJSONDataProvider{
-		rand:  rand.New(rand.NewSource(123)),
 		image: img,
 	}
 }
 
 func (t *ThumbnailerJSONDataProvider) GetData() []byte {
-	width := t.rand.Intn(1440) + 1
-	height := t.rand.Intn(900) + 1
+	width := rand.Intn(1440) + 1
+	height := rand.Intn(900) + 1
 
 	b64Len := base64.StdEncoding.EncodedLen(len(t.image))
 	buf := make([]byte, 0, b64Len+64)
