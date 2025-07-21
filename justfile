@@ -15,3 +15,14 @@ howmanyerrors:
 
 run config_file:
     go run cmd/main.go --config={{config_file}} --log-level=info
+
+
+###### pprofing ######
+pprof:
+    go tool pprof -http=:9092 http://localhost:6060/debug/pprof/profile
+
+heap:
+    go tool pprof -http=:9093 http://localhost:6060/debug/pprof/heap
+
+goroutine:
+    go tool pprof -http=:9094 http://localhost:6060/debug/pprof/goroutine

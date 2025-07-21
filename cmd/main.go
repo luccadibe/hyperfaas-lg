@@ -4,13 +4,17 @@ import (
 	"flag"
 	"lg/internal"
 	"log/slog"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 
 	"github.com/goforj/godump"
 )
 
 func main() {
-
+	go func() {
+		http.ListenAndServe("localhost:6060", nil)
+	}()
 	config := flag.String("config", "workload_config.yaml", "config file")
 	logLevel := flag.String("log-level", "info", "log level")
 	flag.Parse()
