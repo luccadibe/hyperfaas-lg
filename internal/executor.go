@@ -14,16 +14,24 @@ type LoadExecutor interface {
 	Stop()
 }
 
+type client interface {
+	ScheduleCall(ctx context.Context, req *leaf.ScheduleCallRequest) (CallResult, error)
+}
+
+type dataCollector interface {
+	Collect(result CallResult)
+}
+
 type ConstantExecutor struct {
 	rps          int
-	client       *LeafClient
-	collector    *Collector
+	client       client
+	collector    dataCollector
 	funcMgr      *FunctionManager
 	l            *slog.Logger
 	dataProvider DataProvider
 }
 
-func NewConstantExecutor(client *LeafClient, collector *Collector, funcMgr *FunctionManager, l *slog.Logger, dataProvider DataProvider) *ConstantExecutor {
+func NewConstantExecutor(client client, collector dataCollector, funcMgr *FunctionManager, l *slog.Logger, dataProvider DataProvider) *ConstantExecutor {
 	return &ConstantExecutor{
 		client:       client,
 		collector:    collector,
@@ -38,14 +46,14 @@ type RampingExecutor struct {
 	endRPS       int
 	step         int
 	duration     time.Duration
-	client       *LeafClient
-	collector    *Collector
+	client       client
+	collector    dataCollector
 	funcMgr      *FunctionManager
 	l            *slog.Logger
 	dataProvider DataProvider
 }
 
-func NewRampingExecutor(client *LeafClient, collector *Collector, funcMgr *FunctionManager, l *slog.Logger, dataProvider DataProvider) *RampingExecutor {
+func NewRampingExecutor(client client, collector dataCollector, funcMgr *FunctionManager, l *slog.Logger, dataProvider DataProvider) *RampingExecutor {
 	return &RampingExecutor{
 		client:       client,
 		collector:    collector,

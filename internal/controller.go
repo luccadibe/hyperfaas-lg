@@ -9,7 +9,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/3s-rg-codes/HyperFaaS/proto/common"
 	"gopkg.in/yaml.v2"
 )
 
@@ -22,13 +21,14 @@ type Controller struct {
 }
 
 type Config struct {
-	GenerateWorkload bool                     `yaml:"generate_workload"`
-	LeafAddress      string                   `yaml:"leaf_address"`
-	Seed             int64                    `yaml:"seed,omitempty"`
-	MaxDuration      time.Duration            `yaml:"max_duration"`
-	Timeout          int32                    `yaml:"timeout"`
-	Patterns         map[string]*PhasePattern `yaml:"patterns"`
-	Workload         *Workload                `yaml:"workload,omitempty"`
+	GenerateWorkload bool                       `yaml:"generate_workload"`
+	LeafAddress      string                     `yaml:"leaf_address"`
+	Seed             int64                      `yaml:"seed,omitempty"`
+	MaxDuration      time.Duration              `yaml:"max_duration"`
+	Timeout          int32                      `yaml:"timeout"`
+	Patterns         map[string]*PhasePattern   `yaml:"patterns"`
+	Workload         *Workload                  `yaml:"workload,omitempty"`
+	FunctionConfig   map[string]*FunctionConfig `yaml:"function_config"`
 }
 
 type Workload struct {
@@ -99,15 +99,7 @@ func (c *Controller) CreateFunctions() {
 	}
 
 	for _, imageTag := range functions {
-		f := c.funcMgr.CreateFunction(imageTag, c.Config.Workload.Timeout, nil,
-			&common.Config{
-				Memory: 1024 * 1024 * 256, // 256MB
-				Cpu: &common.CPUConfig{
-					Period: 100000,
-					Quota:  100000,
-				},
-			},
-		)
+		f := c.funcMgr.CreateFunction(imageTag, c.Config.Workload.Timeout, c.Config.FunctionConfig[imageTag])
 		for i, phase := range c.Config.Workload.Phases {
 			if phase.ImageTag == imageTag {
 				phase.FunctionID = f.ID
