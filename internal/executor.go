@@ -80,13 +80,15 @@ func (e *ConstantExecutor) Execute(ctx context.Context, phase TestPhase) {
 			for i := 0; i < e.rps; i++ {
 
 				go func() {
+					data := e.dataProvider.GetData()
 					result, _ := e.client.ScheduleCall(ctx, &leaf.ScheduleCallRequest{
 						FunctionID: &common.FunctionID{
 							Id: phase.FunctionID,
 						},
-						Data: e.dataProvider.GetData(),
+						Data: data,
 					})
 					result.ImageTag = phase.ImageTag
+					result.RequestSize = int64(len(data))
 					e.collector.Collect(result)
 				}()
 
@@ -129,13 +131,15 @@ func (e *RampingExecutor) Execute(ctx context.Context, phase TestPhase) {
 
 			for i := 0; i < currentRPS; i++ {
 				go func() {
+					data := e.dataProvider.GetData()
 					result, _ := e.client.ScheduleCall(ctx, &leaf.ScheduleCallRequest{
 						FunctionID: &common.FunctionID{
 							Id: phase.FunctionID,
 						},
-						Data: e.dataProvider.GetData(),
+						Data: data,
 					})
 					result.ImageTag = phase.ImageTag
+					result.RequestSize = int64(len(data))
 					e.collector.Collect(result)
 				}()
 			}
