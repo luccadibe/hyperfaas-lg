@@ -12,18 +12,19 @@ import (
 )
 
 var (
-	CSV_HEADERS = []string{"timestamp", "function_id", "latency_ms", "status", "error", "request_size_bytes", "response_size_bytes", "call_queued_timestamp", "got_response_timestamp", "instance_id", "leaf_got_request_timestamp", "leaf_scheduled_call_timestamp", "function_processing_time_ns"}
+	CSV_HEADERS = []string{"timestamp", "function_id", "image_tag", "latency_ms", "status", "error", "request_size_bytes", "response_size_bytes", "call_queued_timestamp", "got_response_timestamp", "instance_id", "leaf_got_request_timestamp", "leaf_scheduled_call_timestamp", "function_processing_time_ns"}
 )
 
 type Collector struct {
 	csvWriter *csv.Writer
+	fileName  string
 	file      *os.File
 	mutex     sync.Mutex
 	headers   []string
 }
 
-func NewCollector() *Collector {
-	file, err := os.Create("results.csv")
+func NewCollector(fileName string) *Collector {
+	file, err := os.Create(fileName)
 	if err != nil {
 		log.Fatalf("Failed to create results file: %v", err)
 	}
@@ -32,20 +33,23 @@ func NewCollector() *Collector {
 	writer.Flush()
 	return &Collector{
 		csvWriter: writer,
+		fileName:  fileName,
 		file:      file,
 		headers:   CSV_HEADERS,
 	}
 }
 
 type CallResult struct {
-	Timestamp    time.Time
-	FunctionID   string
+	Timestamp time.Time
+
 	Latency      time.Duration
 	Status       codes.Code
 	Error        string
 	RequestSize  int64
 	ResponseSize int64
 	// HyperFaaS-specific trailer fields
+	FunctionID                 string
+	ImageTag                   string
 	CallQueuedTimestamp        string
 	GotResponseTimestamp       string
 	InstanceID                 string
@@ -61,6 +65,7 @@ func (c *Collector) Collect(result CallResult) {
 	c.csvWriter.Write([]string{
 		result.Timestamp.Format(time.RFC3339),
 		result.FunctionID,
+		result.ImageTag,
 		strconv.FormatInt(result.Latency.Nanoseconds(), 10),
 		result.Status.String(),
 		result.Error,
@@ -87,5 +92,7 @@ func (c *Collector) RunFlusher() {
 
 func (c *Collector) Close() {
 	c.csvWriter.Flush()
-	c.file.Close()
+	if c.file != nil {
+		c.file.Close()
+	}
 }

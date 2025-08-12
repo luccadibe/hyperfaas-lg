@@ -86,6 +86,7 @@ func (e *ConstantExecutor) Execute(ctx context.Context, phase TestPhase) {
 						},
 						Data: e.dataProvider.GetData(),
 					})
+					result.ImageTag = phase.ImageTag
 					e.collector.Collect(result)
 				}()
 
@@ -134,6 +135,7 @@ func (e *RampingExecutor) Execute(ctx context.Context, phase TestPhase) {
 						},
 						Data: e.dataProvider.GetData(),
 					})
+					result.ImageTag = phase.ImageTag
 					e.collector.Collect(result)
 				}()
 			}

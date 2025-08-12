@@ -128,7 +128,6 @@ func NewController(logger *slog.Logger, opts ...Option) *Controller {
 		c.Config.Workload = generator.GenerateWorkload()
 	}
 	c.funcMgr = NewFunctionManager(c.Config.LeafAddress)
-	c.collector = NewCollector()
 	c.funcDataProviders = make(map[string]DataProvider)
 
 	distinctImageTags := getDistinctImageTags(c.Config.Workload.Phases)
@@ -188,6 +187,12 @@ func WithConfigFile(path string) Option {
 				}
 			}
 		}
+	}
+}
+
+func WithCollector(collector *Collector) Option {
+	return func(c *Controller) {
+		c.collector = collector
 	}
 }
 

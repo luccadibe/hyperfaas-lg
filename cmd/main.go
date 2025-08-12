@@ -16,6 +16,7 @@ func main() {
 		http.ListenAndServe("localhost:6060", nil)
 	}()
 	config := flag.String("config", "workload_config.yaml", "config file")
+	out := flag.String("out", "results.csv", "output collector file name")
 	logLevel := flag.String("log-level", "info", "log level")
 	flag.Parse()
 
@@ -28,6 +29,7 @@ func main() {
 	controller := internal.NewController(
 		logger,
 		internal.WithConfigFile(*config),
+		internal.WithCollector(internal.NewCollector(*out)),
 	)
 	godump.Dump(controller.Config.Workload)
 	controller.Run()

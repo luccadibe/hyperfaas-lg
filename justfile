@@ -13,8 +13,8 @@ test-generate-small:
 howmanyerrors:
     awk -F',' '{if($5!="") count++} END{print count}' results.csv
 
-run config_file:
-    go run cmd/main.go --config={{config_file}} --log-level=info
+run config_file out_file:
+    go run cmd/main.go --config={{config_file}} --out={{out_file}} --log-level=info
 
 
 ###### pprofing ######
