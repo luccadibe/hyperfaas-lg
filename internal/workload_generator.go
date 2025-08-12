@@ -2,6 +2,7 @@ package internal
 
 import (
 	"math/rand/v2"
+	"strconv"
 	"time"
 )
 
@@ -74,6 +75,7 @@ func (g *WorkloadGenerator) GenerateWorkload() *Workload {
 			}
 
 			phase := TestPhase{
+				Name:      pattern.ImageTag + "_" + strconv.Itoa(i),
 				ImageTag:  pattern.ImageTag,
 				Type:      phaseType,
 				StartTime: phaseStartTime,

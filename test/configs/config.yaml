@@ -1,6 +1,12 @@
 leaf_address: localhost:50050
 max_duration: 30s
 timeout: 10
+function_config:
+  hyperfaas-echo:latest:
+    memory: 256MB
+    cpu:
+      period: 100000
+      quota: 50000
 workload:
   phases:
     - name: phase1
